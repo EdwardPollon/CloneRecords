@@ -1,0 +1,54 @@
+@isTest
+public class CloneRecordsWithRelatedPluginTest {
+    @IsTest
+    private static void testClone(){
+        CloneRecordWithRelatedPlugin.InputsFromFlow inputs = new CloneRecordWithRelatedPlugin.InputsFromFlow();
+        inputs.selectedSObjects = 'Class__c;Service__c';
+        inputs.currentRecordId = testDataSetup();
+        inputs.parentSObjectName = 'Opportunity';
+        
+        Test.startTest();
+        CloneRecordWithRelatedPlugin.constructQuery(
+            new List<CloneRecordWithRelatedPlugin.InputsFromFlow>{inputs}
+        );
+        Test.stopTest();
+    }
+
+    public static String testDataSetup(){
+        Account acc = new Account(
+            Name = 'Test Account',
+            RecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByName().get('Business').getRecordTypeId(),
+            Type = 'HQ',
+            CurrencyIsoCode = 'USD'
+        );
+        insert acc;
+
+        Opportunity opp = new Opportunity(
+            Name = 'Test Opp',
+            RecordTypeId = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('Partnership').getRecordTypeId(),
+            CloseDate = System.today(),
+            StageName = 'Signed',
+            MSA__c = '1 - New York Metro',
+            LeadSource = 'Inbound',
+            AccountId = acc.Id
+        );
+        insert opp;
+
+        Service__c service = new Service__c(
+            Name = 'Test Service',
+            Duration_Minutes__c = '30',
+            Opportunity__c = opp.Id
+        );
+        insert service;
+
+        Class__c c = new Class__c(
+            Class_Name__c = 'Test Class',
+            Duration_Minutes__c = 60,
+            Opportunity__c = opp.Id
+        );
+        insert c;
+
+        return opp.Id;
+    }
+ 
+}
