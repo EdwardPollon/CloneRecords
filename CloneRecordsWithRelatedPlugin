@@ -16,18 +16,18 @@ global class CloneRecordWithRelatedPlugin {
         public String parentSObjectName;
     }
 
-    global class OutputsFromFlow{
+    global class OutputsToFlow{
         @InvocableVariable
         public String clonedRecordId;
     }
 
     @InvocableMethod
-    public static List<OutputsFromFlow> constructQuery(List<InputsFromFlow> inputs){
+    public static List<OutputsToFlow> constructQuery(List<InputsFromFlow> inputs){
 
-        List<OutputsFromFlow> outputs = new List<OutputsFromFlow>();
+        List<OutputsToFlow> outputs = new List<OutputsToFlow>();
         SObject currentRecord = queryParentRecord(inputs[0].parentSObjectName, inputs[0].currentRecordId);
         SObject clonedParentRecord = cloneparentRecord(currentRecord);
-        OutputsFromFlow output = new OutputsFromFlow();
+        OutputsToFlow output = new OutputsToFlow();
         output.clonedRecordId = clonedParentRecord.Id;
         outputs.add(output);
 
