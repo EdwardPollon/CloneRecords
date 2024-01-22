@@ -1,24 +1,36 @@
 global class CloneRecordWithRelatedPlugin {
     
-    /* Edward Pollon - 01-January-2024
-     * Invoked by Flows - 
+    /* @createdby: Edward Pollon - 01-January-2024
+     * @designed to be invoked by Flows
+     *  
+     * @In order for this code to work, the relationship field that links the child records to the parent records must be the same across all objects 
+     * and must correspond exactly to the parent object name, which should be input through the 'parentSObjectName' input variable.
+     * For eample, if the parent object is Opportunity, the lookup/master-detail field on all child custom objects must be have an API name of 'Opportunity__c'.
+     * The code will automatically work for all standard objects with relationships to the parent object if the parent object is standard as well.
+     * 
+     * @Relationship Field Naming Convention Key:
+     * Parent Standard Object -- Child Standard Object ----> lookup field on child object: [parent object API name]Id
+     * Parent Standard Object -- Child Custom Object ------> lookup field on child object: [parent object API name]
+     * Parent Custom Object -- Child Standard Object ------> lookup field on child object: [parent object API name]
+     * Parent Custom Object -- Child Custom Object --------> lookup field on child object: [parent object API name]
     */    
 
     /* inner class to store input variables */
     global class InputsFromFlow{
         @InvocableVariable
-        public String selectedSObjects;    
+        public String selectedSObjects; //This should be a semicolon separated list of object API names (Example --> Service__c;Opportunity_Location__c;OpportunityLineItem )
     
         @InvocableVariable
-        public String currentRecordId;
+        public String currentRecordId; //This should be the the record Id of the parent record you're cloning.
     
         @InvocableVariable
-        public String parentSObjectName;
+        public String parentSObjectName; //This should be the API name of the parent object you're cloning.
     }
 
+    /* inner class to store output variables */
     global class OutputsToFlow{
         @InvocableVariable
-        public String clonedRecordId;
+        public String clonedRecordId; //This will store the newly cloned parent record Id to optionally form a redirect URL.
     }
 
     @InvocableMethod
@@ -31,46 +43,52 @@ global class CloneRecordWithRelatedPlugin {
         output.clonedRecordId = clonedParentRecord.Id;
         outputs.add(output);
 
-        List<String> selectedSObjectsList = inputs[0].selectedSObjects.split(';');
-        List<String> relationshipQueryFields = new List<String>();
-        String childObjQueryName = '';
-        String query = 'SELECT Id';
-        for(String obj : selectedSObjectsList){
-            String objName = obj;
-            if(obj.endsWith('s__c')){
-                childObjQueryName = objName.replace('__c','es__r');
-                relationshipQueryFields.add(childObjQueryName);
-            }
-            else if(obj.endsWith('__c')){
-                childObjQueryName = objName.replace('__c','s__r');
-                relationshipQueryFields.add(childObjQueryName);
-            }
-            else if(obj.endsWith('s')){
-                childObjQueryName = objName += 'es';
-                relationshipQueryFields.add(childObjQueryName);
-            }
-            else{
-                childObjQueryName = objName += 's';
-                relationshipQueryFields.add(childObjQueryName);
-            }
-            System.debug('obj: ' + obj);
-            SObjectType childSObjectType = Schema.getGlobalDescribe().get(obj);
-            List<Schema.SObjectField> childFields = childSObjectType.getDescribe().fields.getMap().values();
-            String queryChildObjectFields = '';
-            for(Schema.SObjectField field : childFields){
-                if(String.isEmpty(queryChildObjectFields)){
-                    queryChildObjectFields += field;
+        //Only execute the block of code from lines 35-79 if the user opted to clone related child records
+        if(!String.isBlank(inputs[0].selectedSObjects)){
+            List<String> selectedSObjectsList = inputs[0].selectedSObjects.split(';');
+            List<String> relationshipQueryFields = new List<String>();
+            String childObjQueryName = '';
+            String query = 'SELECT Id';
+            System.debug('Selected SObject List: ' + selectedSObjectsList);
+
+            for(String obj : selectedSObjectsList){
+                String objName = obj;
+                if(obj.endsWith('s__c')){
+                    childObjQueryName = objName.replace('__c','es__r');
+                    relationshipQueryFields.add(childObjQueryName);
+                }
+                else if(obj.endsWith('__c')){
+                    childObjQueryName = objName.replace('__c','s__r');
+                    relationshipQueryFields.add(childObjQueryName);
+                }
+                else if(obj.endsWith('s')){
+                    childObjQueryName = objName += 'es';
+                    relationshipQueryFields.add(childObjQueryName);
                 }
                 else{
-                    queryChildObjectFields += ', ' + field;
-                }              
+                    childObjQueryName = objName += 's';
+                    relationshipQueryFields.add(childObjQueryName);
+                }
+                System.debug('obj: ' + obj);
+                SObjectType childSObjectType = Schema.getGlobalDescribe().get(obj);
+                List<Schema.SObjectField> childFields = childSObjectType.getDescribe().fields.getMap().values();
+                String queryChildObjectFields = '';
+                for(Schema.SObjectField field : childFields){
+                    if(String.isEmpty(queryChildObjectFields)){
+                        queryChildObjectFields += field;
+                    }
+                    else{
+                        queryChildObjectFields += ', ' + field;
+                    }              
+                }
+                query += ', (SELECT ' + queryChildObjectFields + ' FROM ' + childObjQueryName + ')';
             }
-            query += ', (SELECT ' + queryChildObjectFields + ' FROM ' + childObjQueryName + ')';
-        }
-        query += 'FROM ' + inputs[0].parentSObjectName + ' WHERE Id = \'' + inputs[0].currentRecordId + '\'';
-        System.debug('Query: ' + query);
+        
+            query += 'FROM ' + inputs[0].parentSObjectName + ' WHERE Id = \'' + inputs[0].currentRecordId + '\'';
+            System.debug('Query: ' + query);
 
-        cloneChildRecords(query, relationshipQueryFields, inputs[0].parentSObjectName, clonedParentRecord);
+            cloneChildRecords(query, relationshipQueryFields, inputs[0].parentSObjectName, clonedParentRecord);
+        }
 
         return outputs;
     }
@@ -117,7 +135,7 @@ global class CloneRecordWithRelatedPlugin {
                     }
                     SObject clonedChildRecord = child.clone(false,true,false,false);
                     if(childObj == 'OpportunityLineItems'){
-                        clonedChildRecord.put('TotalPrice', null);
+                        clonedChildRecord.put('TotalPrice', null); //When creating OpportunityLineItem records, you can't have both the UnitPrice and TotalPrice fields populated.
                     }
                     //SObject clonedChildRecord = (SObject)(Type.forName('Schema.'+ child).newInstance());
                     clonedChildRecord.put(relationshipFieldName, clonedParentRecord.Id);
