@@ -52,21 +52,20 @@ global class CloneRecordWithRelatedPlugin {
             System.debug('Selected SObject List: ' + selectedSObjectsList);
 
             for(String obj : selectedSObjectsList){
-                String objName = obj;
                 if(obj.endsWith('s__c')){
-                    childObjQueryName = objName.replace('__c','es__r');
+                    childObjQueryName = obj.replace('__c','es__r');
                     relationshipQueryFields.add(childObjQueryName);
                 }
                 else if(obj.endsWith('__c')){
-                    childObjQueryName = objName.replace('__c','s__r');
+                    childObjQueryName = obj.replace('__c','s__r');
                     relationshipQueryFields.add(childObjQueryName);
                 }
                 else if(obj.endsWith('s')){
-                    childObjQueryName = objName += 'es';
+                    childObjQueryName = obj + 'es';
                     relationshipQueryFields.add(childObjQueryName);
                 }
                 else{
-                    childObjQueryName = objName += 's';
+                    childObjQueryName = obj + 's';
                     relationshipQueryFields.add(childObjQueryName);
                 }
                 System.debug('obj: ' + obj);
@@ -137,7 +136,6 @@ global class CloneRecordWithRelatedPlugin {
                     if(childObj == 'OpportunityLineItems'){
                         clonedChildRecord.put('TotalPrice', null); //When creating OpportunityLineItem records, you can't have both the UnitPrice and TotalPrice fields populated.
                     }
-                    //SObject clonedChildRecord = (SObject)(Type.forName('Schema.'+ child).newInstance());
                     clonedChildRecord.put(relationshipFieldName, clonedParentRecord.Id);
                     clonedRecordsToInsert.add(clonedChildRecord);
                 }
