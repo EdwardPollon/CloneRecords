@@ -6,10 +6,10 @@ For eample, if the parent object is Opportunity, the lookup/master-detail field 
 The code will automatically work for all standard objects with relationships to the parent object if the parent object is standard as well.
 
 Relationship Field Naming Convention Key:
-Parent Standard Object -- Child Standard Object ----> lookup field on child object: [parent object API name]Id
-Parent Standard Object -- Child Custom Object ------> lookup field on child object: [parent object API name]
-Parent Custom Object -- Child Standard Object ------> lookup field on child object: [parent object API name]
-arent Custom Object -- Child Custom Object --------> lookup field on child object: [parent object API name]
+1) Parent Standard Object -- Child Standard Object ----> lookup field on child object: [parent object API name]Id
+2) Parent Standard Object -- Child Custom Object ------> lookup field on child object: [parent object API name]
+3) Parent Custom Object -- Child Standard Object ------> lookup field on child object: [parent object API name]
+4) Parent Custom Object -- Child Custom Object --------> lookup field on child object: [parent object API name]
 
 Create an invocable action from Flows that will allow you to clone records with ease. The code is designed to take three input variables from a Flow:
 
