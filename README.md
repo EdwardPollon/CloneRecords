@@ -1,4 +1,4 @@
-Salesforce has limited cloning functionality when it comes to cloning related records simultaneously. This is designed to be a reusable Apex action that can be plugged into virtually any Flow to clone any parent record and any child records. 
+Salesforce has limited cloning functionality when it comes to cloning child related records along with a parent record. This is designed to be a reusable Apex action that can be plugged into virtually any Flow to clone any parent record and any child records. 
 All you need to do is pass in the record Id of the parent record and the object names of the parent and child records you're wanting to clone.
 
 In order for this code to work, the relationship field that links the child records to the parent records must be the same across all objects and must correspond exactly to the parent object name, which should be input through the 'parentSObjectName' input variable.
