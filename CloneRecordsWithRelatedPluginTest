@@ -1,5 +1,5 @@
 @isTest
-public class CloneRecordsWithRelatedPluginTest {
+public class CloneRecordWithRelatedPluginTest {
     @IsTest
     private static void testClone(){
         CloneRecordWithRelatedPlugin.InputsFromFlow inputs = new CloneRecordWithRelatedPlugin.InputsFromFlow();
