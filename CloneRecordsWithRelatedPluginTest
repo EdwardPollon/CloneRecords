@@ -3,9 +3,9 @@ public class CloneRecordWithRelatedPluginTest {
     @IsTest
     private static void testClone(){
         CloneRecordWithRelatedPlugin.InputsFromFlow inputs = new CloneRecordWithRelatedPlugin.InputsFromFlow();
-        inputs.selectedSObjects = 'Class__c;Service__c';
+        inputs.selectedSObjects = 'CustomObject1__c;CustomObject2__c'; //you will need to align these objects with the ones you created in the testDataSetup() method
         inputs.currentRecordId = testDataSetup();
-        inputs.parentSObjectName = 'Opportunity';
+        inputs.parentSObjectName = 'Opportunity'; //it doesn't need to be 'Opportunity.' Just make sure it lines up with the parent record you're creating in the testDataSetup() method
         
         Test.startTest();
         CloneRecordWithRelatedPlugin.constructQuery(
@@ -17,7 +17,7 @@ public class CloneRecordWithRelatedPluginTest {
     public static String testDataSetup(){
         Account acc = new Account(
             Name = 'Test Account',
-            RecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByName().get('Business').getRecordTypeId(),
+            RecordTypeId = Schema.SObjectType.Account.getRecordTypeInfosByName().get('RECORD TYPE NAME').getRecordTypeId(), /*SELECT A RECORD TYPE TO RETRIEVE*/
             Type = 'HQ',
             CurrencyIsoCode = 'USD'
         );
@@ -25,28 +25,25 @@ public class CloneRecordWithRelatedPluginTest {
 
         Opportunity opp = new Opportunity(
             Name = 'Test Opp',
-            RecordTypeId = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('Partnership').getRecordTypeId(),
+            RecordTypeId = Schema.SObjectType.Opportunity.getRecordTypeInfosByName().get('RECORD TYPE NAME').getRecordTypeId(), /*SELECT A RECORD TYPE TO RETRIEVE*/
             CloseDate = System.today(),
             StageName = 'Signed',
-            MSA__c = '1 - New York Metro',
             LeadSource = 'Inbound',
             AccountId = acc.Id
         );
         insert opp;
 
-        Service__c service = new Service__c(
-            Name = 'Test Service',
-            Duration_Minutes__c = '30',
+        CustomObject__1 customObject1 = new CustomObject__1( 
+            Name = 'Test Record 1',
             Opportunity__c = opp.Id
-        );
-        insert service;
+        ); //THIS CAN BE ANY CUSTOM OR STANDARD OBJECT THAT YOU WANT TO USE AS A CHILD RECORD
+        insert customObject1;
 
-        Class__c c = new Class__c(
-            Class_Name__c = 'Test Class',
-            Duration_Minutes__c = 60,
+        CustomObject__2 customObject2 = new CustomObject__2(
+            Name = 'Test Record 2',
             Opportunity__c = opp.Id
-        );
-        insert c;
+        ); //THIS CAN BE ANY CUSTOM OR STANDARD OBJECT THAT YOU WANT TO USE AS A CHILD RECORD
+        insert customObject2;
 
         return opp.Id;
     }
