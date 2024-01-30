@@ -18,7 +18,7 @@ global class CloneRecordWithRelatedPlugin {
     /* inner class to store input variables */
     global class InputsFromFlow{
         @InvocableVariable
-        public String selectedSObjects; //This should be a semicolon separated list of object API names (Example --> Service__c;Opportunity_Location__c;OpportunityLineItem )
+        public String selectedSObjects; //This should be a semicolon separated list of object API names (Example --> Custom_Object1__c;Custom_Object2__c;StandardObject)
     
         @InvocableVariable
         public String currentRecordId; //This should be the the record Id of the parent record you're cloning.
